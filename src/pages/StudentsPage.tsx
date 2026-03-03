@@ -119,7 +119,7 @@ export const StudentsPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <Header />
       {/* Add bottom padding for mobile footer */}
-      <main className="container mx-auto px-6 py-8 pt-32 pb-20 sm:pb-8">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-28 sm:pt-32 pb-20 sm:pb-8">
         <Button
           variant="ghost"
           size="sm"
@@ -130,14 +130,14 @@ export const StudentsPage = () => {
           Back to Dashboard
         </Button>
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-8">
           <div className="flex items-center gap-4">
             <div>
               <h1 className="text-2xl font-bold mb-2">Students</h1>
               <p className="text-sm text-muted-foreground">Manage your students</p>
             </div>
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground max-w-2xl">
             Students are managed by administrators. You'll see students assigned to your grades.
           </div>
         </div>
@@ -154,7 +154,7 @@ export const StudentsPage = () => {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
               </div>
             ) : students.length > 0 ? (
-              <Table>
+              <Table className="min-w-[900px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
@@ -220,16 +220,17 @@ export const StudentsPage = () => {
             )}
           </CardContent>
           {students.length > 0 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 border-t">
               <div className="text-sm text-muted-foreground">
                 Page {currentPage} of {totalPages}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
+                  className="flex-1 sm:flex-none"
                 >
                   Previous
                 </Button>
@@ -238,6 +239,7 @@ export const StudentsPage = () => {
                   size="sm"
                   onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
+                  className="flex-1 sm:flex-none"
                 >
                   Next
                 </Button>

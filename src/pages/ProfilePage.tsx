@@ -153,7 +153,7 @@ const ProfilePage = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <Header />
       
-      <main className="container mx-auto px-6 py-8 pt-32">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-28 sm:pt-32">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
             <h1 className="text-2xl font-bold mb-2">
@@ -250,7 +250,7 @@ const ProfilePage = () => {
                       })
                     )}
                   </div>
-                  <div className="flex gap-2 mb-2">
+                  <div className="flex flex-col sm:flex-row gap-2 mb-2">
                     <Input
                       id="add_subject"
                       placeholder="Add new subject"
@@ -269,7 +269,7 @@ const ProfilePage = () => {
                     />
                     <button
                       type="button"
-                      className="px-3 py-2 bg-primary text-white rounded flex items-center justify-center"
+                      className="px-3 py-2 bg-primary text-white rounded flex items-center justify-center w-full sm:w-auto"
                       title="Add subject"
                       onClick={e => {
                         const input = (e.currentTarget.parentElement?.querySelector('#add_subject') as HTMLInputElement);

@@ -262,7 +262,7 @@ export const QuestionPapersPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <Header />
       
-      <main className="container mx-auto px-6 py-8 pt-32">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-28 sm:pt-32">
         {/* Enhanced Header Section */}
         <div className="mb-10">
           <Button
@@ -291,7 +291,7 @@ export const QuestionPapersPage = () => {
               
               {/* Stats Summary - Shows filtered count */}
               {filteredQuestionPapers.length > 0 && (
-                <div className="flex gap-4 mt-4">
+                <div className="flex flex-wrap gap-3 sm:gap-4 mt-4">
                   <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-100">
                     <FileText className="h-4 w-4 text-blue-600" />
                     <span className="text-sm font-semibold text-blue-700">
@@ -311,13 +311,13 @@ export const QuestionPapersPage = () => {
               <DialogTrigger asChild>
                 <Button 
                   size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all"
+                  className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all"
                 >
                   <Plus className="mr-2 h-5 w-5" />
                   Create Question Paper
                 </Button>
               </DialogTrigger>
-            <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
+            <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
               <DialogHeader>
                 <DialogTitle>Create New Question Paper</DialogTitle>
               </DialogHeader>
@@ -345,7 +345,7 @@ export const QuestionPapersPage = () => {
             <p className="mt-4 text-muted-foreground">Loading question papers...</p>
           </div>
         ) : filteredQuestionPapers.length > 0 ? (
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-6">
             {filteredQuestionPapers.map((paper) => (
               <Card key={paper.id} className="group relative overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-200 bg-white rounded-2xl">
                 {/* Subtle gradient background - reduced size */}
@@ -394,7 +394,7 @@ export const QuestionPapersPage = () => {
                   </div>
 
                   {/* Title - More Prominent */}
-                  <CardTitle className="text-center text-2xl font-extrabold text-gray-900 mb-4 line-clamp-2 min-h-[3.5rem] px-4 leading-tight tracking-tight">
+                  <CardTitle className="text-center text-xl sm:text-2xl font-extrabold text-gray-900 mb-4 line-clamp-2 min-h-[3.5rem] px-3 sm:px-4 leading-tight tracking-tight">
                     {paper.title}
                   </CardTitle>
 
@@ -449,7 +449,7 @@ export const QuestionPapersPage = () => {
                   </div>
                   
                   {/* Footer with date and print button */}
-                  <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 mt-3 border-t border-gray-100">
                     <div className="flex items-center gap-2.5">
                       <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center">
                         <Calendar className="h-4 w-4 text-gray-500" />
@@ -467,7 +467,7 @@ export const QuestionPapersPage = () => {
                     </div>
                     <Button
                       size="sm"
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-300 px-4 py-2 h-auto rounded-lg font-semibold hover:scale-105"
+                      className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-300 px-4 py-2 h-auto rounded-lg font-semibold hover:scale-105"
                       onClick={() => handlePrintPaper(paper)}
                     >
                       <FileText className="h-4 w-4 mr-1.5" />
@@ -509,7 +509,7 @@ export const QuestionPapersPage = () => {
 
       {/* Preview Dialog */}
       <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Eye className="h-5 w-5 text-blue-600" />
@@ -529,7 +529,7 @@ export const QuestionPapersPage = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-blue-900 mb-2">Statistics</h3>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {selectedPaper.grade && (
                         <div className="text-center p-2 bg-green-100 rounded">
                           <div className="text-lg font-bold text-green-800">
@@ -560,7 +560,7 @@ export const QuestionPapersPage = () => {
                 <div className="space-y-3">
                   {(selectedPaper.questions || []).map((q: any, idx: number) => (
                     <div key={q.id || idx} className="border rounded-lg p-4 bg-gray-50">
-                      <div className="flex justify-between items-start mb-2">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-blue-600">Q{idx + 1}.</span>
                           <Badge variant="outline" className={
@@ -594,7 +594,7 @@ export const QuestionPapersPage = () => {
               </div>
 
               <div className="flex justify-end gap-2 pt-4 border-t">
-                <Button variant="outline" onClick={() => handlePrintPaper(selectedPaper)}>
+                <Button variant="outline" onClick={() => handlePrintPaper(selectedPaper)} className="w-full sm:w-auto">
                   <FileText className="h-4 w-4 mr-2" />
                   Print
                 </Button>
@@ -606,7 +606,7 @@ export const QuestionPapersPage = () => {
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Edit className="h-5 w-5 text-green-600" />

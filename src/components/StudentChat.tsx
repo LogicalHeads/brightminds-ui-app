@@ -16,6 +16,7 @@ const formatTime = (iso: string) => new Date(iso).toLocaleTimeString([], { hour:
 
 export const StudentChat: React.FC<StudentChatProps> = ({ token, studentId, studentName, rooms }) => {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(rooms[0]?.id || null);
+  const [availableRooms, setAvailableRooms] = useState<Room[]>(rooms || []);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,6 +37,49 @@ export const StudentChat: React.FC<StudentChatProps> = ({ token, studentId, stud
     scrollToBottom();
   }, [messages.length]);
 
+  useEffect(() => {
+    let isActive = true;
+
+    const dedupedRooms = Array.from(new Map((rooms || []).map((room) => [room.id, room])).values());
+    if (dedupedRooms.length === 0) {
+      setAvailableRooms([]);
+      setSelectedRoomId(null);
+      setMessages([]);
+      return;
+    }
+
+    const validateRooms = async () => {
+      const checks = await Promise.allSettled(
+        dedupedRooms.map(async (room) => {
+          await chatAPI.list(token, room.id, 1);
+          return room;
+        })
+      );
+
+      if (!isActive) return;
+
+      const validRooms = checks
+        .filter((result): result is PromiseFulfilledResult<Room> => result.status === 'fulfilled')
+        .map((result) => result.value);
+
+      setAvailableRooms(validRooms);
+      setSelectedRoomId((prev) => {
+        if (prev && validRooms.some((room) => room.id === prev)) return prev;
+        return validRooms[0]?.id || null;
+      });
+
+      if (validRooms.length === 0) {
+        setMessages([]);
+      }
+    };
+
+    validateRooms();
+
+    return () => {
+      isActive = false;
+    };
+  }, [rooms, token]);
+
   const loadMessages = async (roomId: string) => {
     try {
       setLoading(true);
@@ -44,6 +88,14 @@ export const StudentChat: React.FC<StudentChatProps> = ({ token, studentId, stud
       setMessages(data);
     } catch (e: any) {
       setError(e?.message || 'Failed to load messages');
+      setAvailableRooms((prev) => {
+        const next = prev.filter((room) => room.id !== roomId);
+        setSelectedRoomId((current) => {
+          if (current !== roomId) return current;
+          return next[0]?.id || null;
+        });
+        return next;
+      });
     } finally {
       setLoading(false);
     }
@@ -66,13 +118,13 @@ export const StudentChat: React.FC<StudentChatProps> = ({ token, studentId, stud
   const handleSend = async () => {
     if (!selectedRoomId || !input.trim()) return;
     try {
-      const row = await chatAPI.send(token, selectedRoomId, input.trim(), studentName);
+      await chatAPI.send(token, selectedRoomId, input.trim(), studentName);
       setInput('');
-      setMessages((prev) => (prev.some(m => m.id === row.id) ? prev : [...prev, row]));
+      // Do not add message here; rely on realtime subscription
     } catch (e: any) { setError(e?.message || 'Failed to send message'); }
   };
 
-  if (!rooms || rooms.length === 0) {
+  if (!availableRooms || availableRooms.length === 0) {
     return (
       <div className="rounded-md border p-4 bg-white">
         <p className="text-sm text-gray-600">You are not assigned to any rooms yet. Ask your teacher to add you to a room to enable chat.</p>
@@ -86,8 +138,8 @@ export const StudentChat: React.FC<StudentChatProps> = ({ token, studentId, stud
         <h3 className="font-semibold text-gray-900">Class Chat</h3>
         <div className="ml-auto flex items-center gap-2">
           <label className="text-sm text-gray-600">Room</label>
-          <select className="border rounded px-2 py-1 text-sm" value={selectedRoomId || ''} onChange={(e) => { const id = e.target.value; setSelectedRoomId(id); loadMessages(id); }}>
-            {rooms.map((r) => (<option key={r.id} value={r.id}>{r.name || r.id}</option>))}
+          <select className="border rounded px-2 py-1 text-sm" value={selectedRoomId || ''} onChange={(e) => { const id = e.target.value; setSelectedRoomId(id); }}>
+            {availableRooms.map((r) => (<option key={r.id} value={r.id}>{r.name || r.id}</option>))}
           </select>
         </div>
       </div>

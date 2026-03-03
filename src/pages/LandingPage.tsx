@@ -25,14 +25,14 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       {/* ── Navigation ── */}
-      <nav className="w-full px-6 py-4 flex items-center justify-between max-w-7xl mx-auto">
+      <nav className="w-full px-4 sm:px-6 py-4 flex items-center justify-between max-w-7xl mx-auto gap-3">
         <div className="flex items-center gap-2">
           <img src="/brightminds-logo1.png" alt="BrightMinds" className="h-14 w-14 object-contain" />
           <span className="text-xl font-bold text-foreground tracking-tight">BrightMinds</span>
         </div>
 
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <Button variant="ghost" size="sm" onClick={() => setLoginOpen(true)}>Log In</Button>
           <Button size="sm" className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setLoginOpen(true)}>
             Sign up
@@ -41,7 +41,7 @@ const LandingPage = () => {
       </nav>
 
       {/* ── Hero Section – Centered like ClassDojo ── */}
-      <section className="max-w-4xl mx-auto px-6 pt-16 pb-8 text-center">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-8 text-center">
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] text-foreground mb-6">
           The Intelligent Classroom Platform for{' '}
           <span className="bg-gradient-to-r from-primary via-[hsl(300,50%,60%)] to-secondary bg-clip-text text-transparent">
@@ -55,12 +55,12 @@ const LandingPage = () => {
       </section>
 
       {/* ── "Get started as a..." Role Cards ── */}
-      <section className="max-w-3xl mx-auto px-6 pb-12">
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 pb-12">
         <h3 className="text-center text-lg font-bold text-foreground mb-6">Get started as a...</h3>
         <div className="flex flex-wrap justify-center gap-4">
           {/* Teacher – active */}
           <Link to="/login" className="group">
-            <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-border bg-white hover:border-primary/40 hover:shadow-lg transition-all duration-300 min-w-[120px]">
+            <div className="flex flex-col items-center gap-2 px-4 sm:px-6 py-5 rounded-2xl border-2 border-border bg-white hover:border-primary/40 hover:shadow-lg transition-all duration-300 min-w-[96px] sm:min-w-[120px]">
               <div className="w-14 h-14 rounded-full bg-[hsl(350,80%,90%)] flex items-center justify-center text-2xl">
                 👩‍🏫
               </div>
@@ -70,7 +70,7 @@ const LandingPage = () => {
           </Link>
 
           {/* Parent – coming soon */}
-          <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-border bg-white opacity-70 min-w-[120px]">
+          <div className="flex flex-col items-center gap-2 px-4 sm:px-6 py-5 rounded-2xl border-2 border-border bg-white opacity-70 min-w-[96px] sm:min-w-[120px]">
             <div className="w-14 h-14 rounded-full bg-[hsl(200,70%,90%)] flex items-center justify-center text-2xl">
               👩‍👧
             </div>
@@ -80,7 +80,7 @@ const LandingPage = () => {
 
           {/* Student – active */}
           <Link to="/student" className="group">
-            <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-border bg-white hover:border-primary/40 hover:shadow-lg transition-all duration-300 min-w-[120px]">
+            <div className="flex flex-col items-center gap-2 px-4 sm:px-6 py-5 rounded-2xl border-2 border-border bg-white hover:border-primary/40 hover:shadow-lg transition-all duration-300 min-w-[96px] sm:min-w-[120px]">
               <div className="w-14 h-14 rounded-full bg-[hsl(210,70%,90%)] flex items-center justify-center text-2xl">
                 🎒
               </div>
@@ -102,7 +102,7 @@ const LandingPage = () => {
       </section>
 
       {/* ── Photo Mosaic ── */}
-      <section className="max-w-6xl mx-auto px-6 pb-16">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {galleryImages.map((item, i) => (
             <div
@@ -123,7 +123,7 @@ const LandingPage = () => {
 
       {/* ── Footer ── */}
       <footer className="border-t border-border bg-muted/30 py-8">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <img src="/brightminds-logo1.png" alt="BrightMinds" className="h-6 w-6" />
             <span>© 2026 BrightMinds. All rights reserved.</span>
@@ -138,15 +138,15 @@ const LandingPage = () => {
 
       {/* Login Role Picker Dialog */}
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl">
+        <DialogContent className="w-[95vw] sm:max-w-md rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-center text-xl">Log in as...</DialogTitle>
           </DialogHeader>
-          <div className="flex justify-center gap-4 py-4">
+          <div className="flex flex-wrap justify-center gap-3 py-4">
             {/* Teacher */}
             <button
               onClick={() => { setLoginOpen(false); navigate('/login'); }}
-              className="group flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-border bg-white hover:border-primary/40 hover:shadow-lg transition-all duration-300 min-w-[110px]"
+              className="group flex flex-col items-center gap-2 px-4 sm:px-6 py-5 rounded-2xl border-2 border-border bg-white hover:border-primary/40 hover:shadow-lg transition-all duration-300 min-w-[96px] sm:min-w-[110px]"
             >
               <div className="w-14 h-14 rounded-full bg-[hsl(350,80%,90%)] flex items-center justify-center text-2xl">
                 👩‍🏫
@@ -156,7 +156,7 @@ const LandingPage = () => {
             </button>
 
             {/* Parent – coming soon */}
-            <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-border bg-white opacity-70 min-w-[110px]">
+            <div className="flex flex-col items-center gap-2 px-4 sm:px-6 py-5 rounded-2xl border-2 border-border bg-white opacity-70 min-w-[96px] sm:min-w-[110px]">
               <div className="w-14 h-14 rounded-full bg-[hsl(200,70%,90%)] flex items-center justify-center text-2xl">
                 👩‍👧
               </div>
@@ -167,7 +167,7 @@ const LandingPage = () => {
             {/* Student */}
             <button
               onClick={() => { setLoginOpen(false); navigate('/student'); }}
-              className="group flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-border bg-white hover:border-primary/40 hover:shadow-lg transition-all duration-300 min-w-[110px]"
+              className="group flex flex-col items-center gap-2 px-4 sm:px-6 py-5 rounded-2xl border-2 border-border bg-white hover:border-primary/40 hover:shadow-lg transition-all duration-300 min-w-[96px] sm:min-w-[110px]"
             >
               <div className="w-14 h-14 rounded-full bg-[hsl(210,70%,90%)] flex items-center justify-center text-2xl">
                 🎒

@@ -89,7 +89,7 @@ export const RoomDetailPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
         <Header />
-        <div className="container mx-auto px-6 py-8 pt-32">
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-28 sm:pt-32">
           <p className="text-center text-muted-foreground">Loading room...</p>
         </div>
       </div>
@@ -100,7 +100,7 @@ export const RoomDetailPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-[hsl(280,40%,98%)] via-[hsl(280,30%,95%)] to-[hsl(35,95%,95%)]">
       <Header />
       
-      <main className="container mx-auto px-6 py-8 pt-32">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-28 sm:pt-32">
         <Button
           variant="ghost"
           className="mb-6"
@@ -128,7 +128,7 @@ export const RoomDetailPage = () => {
             </div>
 
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold mb-4">Select a Student</h2>
+              <h2 className="text-xl sm:text-2xl font-semibold mb-4">Select a Student</h2>
               <p className="text-muted-foreground mb-6">
                 Click on a student to start their learning activity
               </p>
@@ -144,18 +144,18 @@ export const RoomDetailPage = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
                 {students.map((student, index) => (
                   <Card
                     key={student.id}
                     className="hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer border-2 hover:border-primary"
                     onClick={() => handleStudentClick(student)}
                   >
-                    <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                      <Avatar className={`h-24 w-24 mb-4 text-2xl font-bold ${getAvatarColor(index)}`}>
+                    <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6 text-center">
+                      <Avatar className={`h-20 w-20 sm:h-24 sm:w-24 mb-4 text-xl sm:text-2xl font-bold ${getAvatarColor(index)}`}>
                         <AvatarFallback>{getInitials(student.name)}</AvatarFallback>
                       </Avatar>
-                      <p className="font-semibold text-foreground text-lg">{student.name}</p>
+                      <p className="font-semibold text-foreground text-base sm:text-lg">{student.name}</p>
                       {student.primary_language && (
                         <Badge variant="outline" className="mt-2 text-xs">
                           {student.primary_language}

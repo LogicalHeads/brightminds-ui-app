@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Calendar, Clock, User, Home, HelpCircle, Bell, Users, Play, Gamepad2, CheckCircle, FileText, MessageCircle } from 'lucide-react';
 import StudentChat from '@/components/StudentChat';
 import { toast } from 'sonner';
@@ -686,6 +687,7 @@ export const StudentPortalPage = () => {
   const [loadingQuestionPaper, setLoadingQuestionPaper] = useState(false);
   const [isSubmittingQuestionPaper, setIsSubmittingQuestionPaper] = useState(false);
   const [submissionProgress, setSubmissionProgress] = useState(0);
+  const [sideTab, setSideTab] = useState('dashboard');
 
   // FIX 1 & 4: Explicitly reset all modal states on component mount and clear persisted state
   useEffect(() => {
@@ -2464,525 +2466,415 @@ export const StudentPortalPage = () => {
       </div>
     );
   }
+  // --- Room History Logic ---
+  const now = new Date();
+  const oneDayMs = 24 * 60 * 60 * 1000;
+  const assignments = studentData.assignments || [];
+  const activeAssignments = assignments.filter(a => {
+    if (!a.due_date) return true;
+    const due = new Date(a.due_date);
+    return (now.getTime() - due.getTime()) < oneDayMs;
+  });
+  const roomHistoryAssignments = assignments.filter(a => {
+    if (!a.due_date) return false;
+    const due = new Date(a.due_date);
+    return (now.getTime() - due.getTime()) >= oneDayMs;
+  });
 
-
+  // --- Side Panel Layout ---
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <User className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Welcome, {studentData.name}! 👋</h1>
-                <p className="text-sm text-gray-600">{studentData.email || 'Student Portal'}</p>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col lg:flex-row lg:overflow-hidden">
+      {/* Side Panel */}
+      <aside className="w-full lg:w-80 lg:min-w-80 shrink-0 bg-white/95 backdrop-blur border-b lg:border-b-0 lg:border-r shadow-sm flex flex-col">
+        <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-white to-blue-50/60 flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-full bg-blue-600 flex items-center justify-center shadow-sm">
+              <User className="h-6 w-6 text-white" />
             </div>
-            {isRefreshing && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                <span>Refreshing...</span>
-              </div>
-            )}
-            {/* Practice Mode Nav Button */}
-            <a
-              href="/student/practice"
-              className="ml-4 px-4 py-2 rounded-lg bg-yellow-300 hover:bg-yellow-400 text-blue-900 font-bold text-lg shadow transition-all border-2 border-yellow-400"
-              style={{ textDecoration: 'none' }}
-            >
-              <span role="img" aria-label="Practice">🎯</span> Practice Mode
-            </a>
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold text-gray-900 truncate">{studentData.name}</h1>
+              <p className="text-xs text-gray-600 truncate">{studentData.email || 'Student Portal'}</p>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <main className="container mx-auto px-6 py-8">
-        {/* My Rooms Section */}
-        <section className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Home className="h-6 w-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900">My Classroom{studentData.rooms.length > 1 ? 's' : ''}</h2>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-md border bg-white px-3 py-2">
+              <p className="text-gray-500">Active</p>
+              <p className="font-semibold text-gray-900">{activeAssignments.length}</p>
+            </div>
+            <div className="rounded-md border bg-white px-3 py-2">
+              <p className="text-gray-500">History</p>
+              <p className="font-semibold text-gray-900">{roomHistoryAssignments.length}</p>
+            </div>
           </div>
-
-          {studentData.rooms.length === 0 ? (
-            <Alert>
-              <AlertDescription>
-                You haven't been assigned to any classrooms yet. Please contact your teacher.
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {studentData.rooms.map((room) => (
-                <Card key={room.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{room.name}</CardTitle>
-                    {room.grade_level && (
-                      <Badge variant="secondary" className="w-fit">
-                        Grade {room.grade_level}
-                      </Badge>
-                    )}
-                    <CardDescription>{room.description || 'No description'}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-gray-600">
-                      <p className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4" />
-                        {studentData.assignments.filter(a => a.room_id === room.id).length} assignment(s)
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          {isRefreshing && (
+            <div className="flex items-center gap-2 text-xs text-gray-600">
+              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+              <span>Refreshing...</span>
             </div>
           )}
-        </section>
-
-        {/* My Assignments Section */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <BookOpen className="h-6 w-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900">My Assignments</h2>
-          </div>
-
-          {studentData.assignments.length === 0 ? (
-            <Alert>
-              <AlertDescription>
-                No assignments yet. Check back later!
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <div className="grid gap-4">
-              {studentData.assignments.map((assignment) => {
-                // Debug assignment structure
-                if (assignment.assignment_type === 'game') {
-                  console.log('🎮 Game Assignment:', {
-                    id: assignment.id,
-                    title: assignment.title,
-                    assignment_type: assignment.assignment_type,
-                    game_id: assignment.games?.id,
-                    games: assignment.games,
-                    game_config: assignment.game_config
-                  });
-                }
-                
-                const room = studentData.rooms.find(r => r.id === assignment.room_id);
-                const dueDate = assignment.due_date ? new Date(assignment.due_date) : null;
-                const isOverdue = dueDate && dueDate < new Date();
-
-                return (
-                  <Card key={assignment.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-lg">{assignment.title}</CardTitle>
-                          <CardDescription className="mt-1">
-                            {room?.name && (
-                              <span className="inline-flex items-center gap-1 text-xs">
-                                <Home className="h-3 w-3" />
-                                {room.name}
-                              </span>
-                            )}
-                          </CardDescription>
+        </div>
+        <div className="flex-1 flex flex-col">
+          <Tabs value={sideTab} onValueChange={setSideTab} className="flex-1 flex flex-col">
+            <TabsList className="flex h-auto flex-row lg:flex-col overflow-x-auto lg:overflow-visible gap-2 p-3 sm:p-4 bg-transparent">
+              <TabsTrigger value="dashboard" className="shrink-0 lg:w-full justify-center lg:justify-start gap-2 rounded-md px-3 py-2 text-xs sm:text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <Home className="h-4 w-4" />
+                <span>Student Dashboard</span>
+              </TabsTrigger>
+              <TabsTrigger value="roomhistory" className="shrink-0 lg:w-full justify-center lg:justify-start gap-2 rounded-md px-3 py-2 text-xs sm:text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <Clock className="h-4 w-4" />
+                <span>Room History</span>
+              </TabsTrigger>
+              <TabsTrigger value="chat" className="shrink-0 lg:w-full justify-center lg:justify-start gap-2 rounded-md px-3 py-2 text-xs sm:text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <MessageCircle className="h-4 w-4" />
+                <span>Class Chat</span>
+              </TabsTrigger>
+              <TabsTrigger value="practice" className="shrink-0 lg:w-full justify-center lg:justify-start gap-2 rounded-md px-3 py-2 text-xs sm:text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <Gamepad2 className="h-4 w-4" />
+                <span>Practice Mode</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </aside>
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+        <div className="mx-auto w-full max-w-7xl">
+        {/* Dashboard Tab */}
+        {sideTab === 'dashboard' && (
+          <>
+            {/* My Rooms Section */}
+            <section className="mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Home className="h-6 w-6 text-blue-600" />
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">My Classroom{studentData.rooms.length > 1 ? 's' : ''}</h2>
+              </div>
+              {studentData.rooms.length === 0 ? (
+                <Alert>
+                  <AlertDescription>
+                    You haven't been assigned to any classrooms yet. Please contact your teacher.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {studentData.rooms.map((room) => (
+                    <Card key={room.id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <CardTitle className="text-lg">{room.name}</CardTitle>
+                        {room.grade_level && (
+                          <Badge variant="secondary" className="w-fit">
+                            Grade {room.grade_level}
+                          </Badge>
+                        )}
+                        <CardDescription>{room.description || 'No description'}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-sm text-gray-600">
+                          <p className="flex items-center gap-2">
+                            <BookOpen className="h-4 w-4" />
+                            {assignments.filter(a => a.room_id === room.id).length} assignment(s)
+                          </p>
                         </div>
-                        <Badge 
-                          variant={assignment.status === 'active' ? 'default' : 'secondary'}
-                          className={isOverdue ? 'bg-red-100 text-red-700 border-red-200' : ''}
-                        >
-                          {isOverdue ? 'Overdue' : assignment.status}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-gray-700 mb-3">
-                        {assignment.description || 'No description provided'}
-                      </p>
-
-                      {/* Assignment Type and Question Paper Badge */}
-                      {(assignment.assignment_type || assignment.question_paper_id || assignment.grade) && (
-                        <div className="mb-2 flex flex-wrap gap-2">
-                          {assignment.assignment_type && (
-                            <Badge variant="outline" className="text-xs">
-                              {assignment.assignment_type === 'custom' && '📝 Custom Assignment'}
-                              {assignment.assignment_type === 'game' && '🎮 Game Assignment'}
-                              {assignment.assignment_type !== 'custom' && assignment.assignment_type !== 'game' && assignment.assignment_type}
-                            </Badge>
-                          )}
-                          {assignment.question_paper_id && (
-                            <Badge variant="outline" className="text-xs bg-blue-100 text-blue-800 border-blue-300">
-                              📄 Question Paper
-                            </Badge>
-                          )}
-                          {assignment.grade && (
-                            <Badge variant="outline" className="text-xs">
-                              Grade {assignment.grade}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                      
-                      {/* Game Information */}
-                      {assignment.assignment_type === 'game' && (
-                        <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Gamepad2 className="h-4 w-4 text-blue-600" />
-                            <span className="text-sm font-medium text-blue-800">
-                              {assignment.games?.name || 'Interactive Game Activity'}
-                            </span>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </section>
+            {/* My Assignments Section */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <BookOpen className="h-6 w-6 text-blue-600" />
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">My Assignments</h2>
+              </div>
+              {activeAssignments.length === 0 ? (
+                <Alert>
+                  <AlertDescription>
+                    No assignments yet. Check back later!
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <div className="grid gap-4">
+                  {activeAssignments.map((assignment) => (
+                    <Card key={assignment.id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                          <div className="flex-1">
+                            <CardTitle>{assignment.title}</CardTitle>
+                            <CardDescription className="mt-2">{assignment.description}</CardDescription>
                           </div>
-                          {assignment.game_config && (
-                            <div className="text-xs text-blue-700">
-                              <span>Difficulty: </span>
-                              <Badge variant="outline" className="text-xs">
-                                {assignment.game_config.difficulty === 'easy' && '🟢 Easy'}
-                                {assignment.game_config.difficulty === 'medium' && '🟡 Medium'}
-                                {assignment.game_config.difficulty === 'hard' && '🔴 Hard'}
-                              </Badge>
-                              {assignment.game_config.category && (
+                          {assignment.status && (
+                            <Badge className={
+                              assignment.status === 'active' ? 'bg-green-100 text-green-800' :
+                              assignment.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                              'bg-gray-100 text-gray-800'
+                            }>
+                              {assignment.status}
+                            </Badge>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {assignment.due_date && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Calendar className="h-4 w-4" />
+                            Due: {new Date(assignment.due_date).toLocaleDateString()}
+                          </div>
+                        )}
+                        <div className="flex flex-wrap gap-2">
+                          {assignment.question_paper_id && (
+                            <Button
+                              size="sm"
+                              onClick={() => startAssignmentWithQuestionPaper(assignment)}
+                              disabled={loadingAttempts[assignment.id]}
+                              className="bg-blue-600 hover:bg-blue-700"
+                            >
+                              {loadingAttempts[assignment.id] ? (
                                 <>
-                                  <span className="ml-2">Category: </span>
-                                  <Badge variant="outline" className="text-xs">
-                                    {assignment.game_config.category}
-                                  </Badge>
+                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                                  Starting...
+                                </>
+                              ) : (
+                                <>
+                                  <Play className="h-4 w-4 mr-2" />
+                                  Start Assignment
                                 </>
                               )}
+                            </Button>
+                          )}
+                          {assignment.assignment_type === 'game' && assignment.games && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                startAssignment(assignment.id).catch(error => {
+                                  console.warn('Failed to record game attempt:', error);
+                                }).finally(() => {
+                                  playGame(assignment);
+                                });
+                              }}
+                              disabled={loadingAttempts[assignment.id]}
+                              className="bg-yellow-500 hover:bg-yellow-600"
+                            >
+                              {loadingAttempts[assignment.id] ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                                  Starting...
+                                </>
+                              ) : (
+                                <>
+                                  <Gamepad2 className="h-4 w-4 mr-2" />
+                                  Play Game
+                                </>
+                              )}
+                            </Button>
+                          )}
+                          {assignmentAttempts[assignment.id]?.ai_submission_id && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                navigate(`/student/feedback/${assignment.id}`);
+                              }}
+                            >
+                              <FileText className="h-4 w-4 mr-2" />
+                              View Feedback
+                            </Button>
+                          )}
+                        </div>
+                        {assignmentAttempts[assignment.id] && (
+                          <div className="mt-3 p-3 bg-blue-50 rounded-lg text-sm">
+                            <div className="flex items-center gap-2 text-blue-700">
+                              <CheckCircle className="h-4 w-4" />
+                              Status: {assignmentAttempts[assignment.id].status}
+                            </div>
+                            {assignmentAttempts[assignment.id].score !== undefined && (
+                              <div className="text-blue-600 mt-1">
+                                Score: {assignmentAttempts[assignment.id].score}%
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </section>
+            {/* My Classmates Section */}
+            <section className="mt-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Users className="h-6 w-6 text-blue-600" />
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">My Classmates</h2>
+              </div>
+              {!studentData.classmates || studentData.classmates.length === 0 ? (
+                <Alert>
+                  <AlertDescription>
+                    No other students in your classrooms yet.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {studentData.classmates.map((classmate) => (
+                    <Card key={classmate.id} className="hover:shadow-md transition-shadow">
+                      <CardHeader>
+                        <div className="flex items-start gap-3">
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                            <User className="h-5 w-5 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-base truncate">{classmate.name}</CardTitle>
+                            {classmate.email && (
+                              <CardDescription className="text-xs truncate">
+                                {classmate.email}
+                              </CardDescription>
+                            )}
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {classmate.primary_language && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <span className="font-medium">Language:</span>
+                              <span>{classmate.primary_language}</span>
                             </div>
                           )}
-                          {assignment.games?.skills && (
-                            <div className="flex gap-1 mt-2">
-                              {assignment.games.skills.slice(0, 3).map((skill: string) => (
-                                <Badge key={skill} variant="secondary" className="text-xs">
-                                  {skill}
+                          <div className="text-sm text-gray-600">
+                            <span className="font-medium">Shared classrooms:</span>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {classmate.rooms.map((room) => (
+                                <Badge key={room.id} variant="secondary" className="text-xs">
+                                  {room.name}
                                 </Badge>
                               ))}
                             </div>
-                          )}
+                          </div>
                         </div>
-                      )}
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          {dueDate && (
-                            <>
-                              <Calendar className="h-4 w-4" />
-                              <span>Due: {dueDate.toLocaleDateString()}</span>
-                              <Clock className="h-4 w-4 ml-2" />
-                              <span>{dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            </>
-                          )}
-                        </div>
-                        
-                        {/* Assignment Action Buttons */}
-                        <div className="flex gap-2">
-                          {(() => {
-                            const attempt = assignmentAttempts[assignment.id];
-                            const isLoading = loadingAttempts[assignment.id];
-                            
-                            // Debug log to see what's happening
-                            console.log(`Assignment ${assignment.id} attempt:`, attempt);
-                            
-                            // Check for submitted/completed status FIRST
-                            if (attempt && (attempt.status === 'completed' || attempt.status === 'submitted')) {
-                              let aiSubmissionId =
-                                attempt.ai_submission_id ||
-                                attempt.submission_data?.ai_submission_id ||
-                                attempt.submission_data?.submissionId ||
-                                attempt.submission_data?.submission_id ||
-                                null;
-                              if (!aiSubmissionId) {
-                                try {
-                                  const raw = localStorage.getItem('student_ai_submission_map');
-                                  const map = raw ? (JSON.parse(raw) as Record<string, string>) : {};
-                                  aiSubmissionId = map[assignment.id] || null;
-                                } catch {
-                                  aiSubmissionId = null;
-                                }
-                              }
-                              return (
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <Badge className="bg-green-100 text-green-800 border-green-300">
-                                    ✅ Submitted {attempt.score !== undefined ? `(${attempt.score}%)` : ''}
-                                  </Badge>
-                                  {aiSubmissionId && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => {
-                                        window.location.href = `/student/feedback/${aiSubmissionId}`;
-                                      }}
-                                    >
-                                      View AI Feedback
-                                    </Button>
-                                  )}
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      resubmitHandledRef.current = true;
-                                      if (attempt) {
-                                        resubmitAttemptSnapshotRef.current[assignment.id] = attempt;
-                                      }
-                                      if (assignment.assignment_type === 'game') {
-                                        startAssignment(assignment.id)
-                                          .catch((error) => {
-                                            console.warn('Failed to record game resubmit attempt:', error);
-                                          })
-                                          .finally(() => {
-                                            playGame(assignment);
-                                          });
-                                      } else if (assignment.question_paper_id) {
-                                        startAssignmentWithQuestionPaper(assignment);
-                                      } else {
-                                        startAssignment(assignment.id);
-                                      }
-                                    }}
-                                    disabled={isLoading}
-                                  >
-                                    {isLoading ? (
-                                      <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-1"></div>
-                                        Resubmitting...
-                                      </>
-                                    ) : (
-                                      'Resubmit'
-                                    )}
-                                  </Button>
-                                </div>
-                              );
-                            }
-                            
-                            if (attempt && attempt.status === 'in_progress') {
-                              // DEBUG: Check assignment structure for games
-                              console.log('🎮 DEBUG: Assignment in progress:', {
-                                id: assignment.id,
-                                title: assignment.title,
-                                assignment_type: assignment.assignment_type,
-                                question_paper_id: assignment.question_paper_id,
-                                games: assignment.games,
-                                game_id: assignment.games?.id
-                              });
-                              
-                              return (
-                                <>
-                                  {assignment.assignment_type === 'game' && (
-                                    <Button 
-                                      onClick={() => {
-                                        console.log('🎮 Continue Game clicked:', assignment.id);
-                                        playGame(assignment);
-                                      }}
-                                      className="bg-green-600 hover:bg-green-700 text-white"
-                                      size="sm"
-                                    >
-                                      <Play className="h-4 w-4 mr-1" />
-                                      Continue Game
-                                    </Button>
-                                  )}
-                                  {assignment.question_paper_id && (
-                                    <Button 
-                                      onClick={() => {
-                                        console.log('📄 Continue Question Paper clicked:', assignment.id);
-                                        // For in-progress assignments, also load and show the question paper
-                                        startAssignmentWithQuestionPaper(assignment);
-                                      }}
-                                      className="bg-orange-600 hover:bg-orange-700 text-white"
-                                      size="sm"
-                                    >
-                                      <FileText className="h-4 w-4 mr-1" />
-                                      Continue Question Paper
-                                    </Button>
-                                  )}
-                                  {(!assignment.assignment_type || (assignment.assignment_type === 'custom' && !assignment.question_paper_id)) && (
-                                    <Button
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        completeAssignment(assignment.id);
-                                      }}
-                                      variant="outline"
-                                      size="sm"
-                                      disabled={isLoading}
-                                    >
-                                      {isLoading ? (
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-1"></div>
-                                      ) : (
-                                        <CheckCircle className="h-4 w-4 mr-1" />
-                                      )}
-                                      Submit
-                                    </Button>
-                                  )}
-                                </>
-                              );
-                            }
-                            
-                            // Default: not started or no attempt record
-                            return (
-                              <Button 
-                                onClick={(e) => {
-                                  // FIX 2: Prevent event propagation to avoid bubbling to parent elements
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  
-                                  // ULTRA DEBUG - Log everything about this assignment
-                                  console.log('╔══════════════════════════════════════════════╗');
-                                  console.log('║  🔘 START ASSIGNMENT BUTTON CLICKED          ║');
-                                  console.log('╚══════════════════════════════════════════════╝');
-                                  console.log('Assignment Object:', assignment);
-                                  console.log('Assignment ID:', assignment.id);
-                                  console.log('Assignment Title:', assignment.title);
-                                  console.log('Assignment Type:', assignment.assignment_type);
-                                  console.log('Question Paper ID:', assignment.question_paper_id);
-                                  console.log('Has Question Paper?:', !!assignment.question_paper_id);
-                                  console.log('Type of question_paper_id:', typeof assignment.question_paper_id);
-                                  console.log('question_paper_id === null?:', assignment.question_paper_id === null);
-                                  console.log('question_paper_id === undefined?:', assignment.question_paper_id === undefined);
-                                  console.log('question_paper_id truthy?:', !!assignment.question_paper_id);
-                                  
-                                  // DECISION TREE - Explicit logging
-                                  console.log('\n🔍 DECISION MAKING:');
-                                  if (assignment.question_paper_id) {
-                                    console.log('✅ CONDITION MET: assignment.question_paper_id EXISTS');
-                                    console.log('➡️  CALLING: startAssignmentWithQuestionPaper()');
-                                    console.log('➡️  THIS SHOULD OPEN THE MODAL!');
-                                    startAssignmentWithQuestionPaper(assignment);
-                                  } else if (assignment.assignment_type === 'game') {
-                                    console.log('❌ CONDITION NOT MET: question_paper_id is NULL/undefined');
-                                    console.log('✅ CONDITION MET: assignment_type === "game"');
-                                    console.log('➡️  CALLING: startAssignment() - GAME MODE');
-                                    startAssignment(assignment.id);
-                                  } else {
-                                    console.log('❌ CONDITION NOT MET: question_paper_id is NULL/undefined');
-                                    console.log('❌ CONDITION NOT MET: not a game assignment');
-                                    console.log('➡️  CALLING: startAssignment() - STANDARD MODE');
-                                    console.log('➡️  THIS WILL ONLY SHOW TOAST, NO MODAL!');
-                                    console.log('🚨 IF YOU EXPECTED A MODAL: question_paper_id is MISSING in database!');
-                                    startAssignment(assignment.id);
-                                  }
-                                  console.log('╚══════════════════════════════════════════════╝\n');
-                                }}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                                size="sm"
-                                disabled={isLoading}
-                              >
-                                {isLoading ? (
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
-                                ) : (
-                                  <Play className="h-4 w-4 mr-1" />
-                                )}
-                                Start Assignment
-                              </Button>
-                            );
-                          })()} 
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        {/* My Classmates Section */}
-        <section className="mt-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Users className="h-6 w-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900">My Classmates</h2>
-          </div>
-
-          {!studentData.classmates || studentData.classmates.length === 0 ? (
-            <Alert>
-              <AlertDescription>
-                No other students in your classrooms yet.
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {studentData.classmates.map((classmate) => (
-                <Card key={classmate.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
-                        <User className="h-5 w-5 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base truncate">{classmate.name}</CardTitle>
-                        {classmate.email && (
-                          <CardDescription className="text-xs truncate">
-                            {classmate.email}
-                          </CardDescription>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {classmate.primary_language && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <span className="font-medium">Language:</span>
-                          <span>{classmate.primary_language}</span>
-                        </div>
-                      )}
-                      <div className="text-sm text-gray-600">
-                        <span className="font-medium">Shared classrooms:</span>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {classmate.rooms.map((room) => (
-                            <Badge key={room.id} variant="secondary" className="text-xs">
-                              {room.name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Class Chat Section */}
-        <section className="mt-8">
-          <div className="flex items-center gap-2 mb-4">
-            <MessageCircle className="h-6 w-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900">Class Chat</h2>
-          </div>
-          {token && studentData ? (
-            <StudentChat
-              token={token}
-              studentId={studentData.id}
-              studentName={studentData.name}
-              rooms={studentData.rooms?.map((r: any) => ({ id: r.id, name: r.name })) || []}
-            />
-          ) : (
-            <div className="rounded-md border p-4 bg-white">
-              <p className="text-sm text-gray-600">Chat is available once you are assigned to a classroom.</p>
-            </div>
-          )}
-        </section>
-
-        {/* Help Section */}
-        <section className="mt-8">
-          <Card className="bg-blue-50 border-blue-200">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <HelpCircle className="h-5 w-5 text-blue-600" />
-                <CardTitle className="text-lg">Need Help?</CardTitle>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </section>
+            {/* Help Section */}
+            <section className="mt-8">
+              <Card className="bg-blue-50 border-blue-200">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <HelpCircle className="h-5 w-5 text-blue-600" />
+                    <CardTitle className="text-lg">Need Help?</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-700">
+                    If you have any questions about your assignments or need assistance, please contact your teacher.
+                  </p>
+                </CardContent>
+              </Card>
+            </section>
+          </>
+        )}
+        {/* Room History Tab */}
+        {sideTab === 'roomhistory' && (
+          <>
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <BookOpen className="h-6 w-6 text-blue-600" />
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Room History</h2>
               </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-700">
-                If you have any questions about your assignments or need assistance, please contact your teacher.
-              </p>
-            </CardContent>
-          </Card>
-        </section>
+              {roomHistoryAssignments.length === 0 ? (
+                <Alert>
+                  <AlertDescription>
+                    No expired assignments yet.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <div className="grid gap-4">
+                  {roomHistoryAssignments.map((assignment) => (
+                    <Card key={assignment.id} className="hover:shadow-lg transition-shadow opacity-75">
+                      <CardHeader>
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                          <div className="flex-1">
+                            <CardTitle>{assignment.title}</CardTitle>
+                            <CardDescription className="mt-2">{assignment.description}</CardDescription>
+                          </div>
+                          <Badge className="bg-gray-100 text-gray-800">
+                            Expired
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {assignment.due_date && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Calendar className="h-4 w-4" />
+                            Was due: {new Date(assignment.due_date).toLocaleDateString()}
+                          </div>
+                        )}
+                        {assignmentAttempts[assignment.id]?.score !== undefined && (
+                          <div className="p-3 bg-gray-50 rounded-lg text-sm">
+                            <div className="text-gray-700">
+                              Final Score: {assignmentAttempts[assignment.id].score}%
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </section>
+          </>
+        )}
+        {/* Class Chat Tab */}
+        {sideTab === 'chat' && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <MessageCircle className="h-6 w-6 text-blue-600" />
+              <h2 className="text-2xl font-bold text-gray-900">Class Chat</h2>
+            </div>
+            {token && studentData ? (
+              <Card className="border-0 shadow-lg bg-white/95">
+                <CardContent className="p-4 md:p-6">
+                  <StudentChat
+                    token={token}
+                    studentId={studentData.id}
+                    studentName={studentData.name}
+                    rooms={studentData.rooms?.map((r: any) => ({ id: r.id, name: r.name })) || []}
+                  />
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="rounded-md border p-4 bg-white">
+                <p className="text-sm text-gray-600">Chat is available once you are assigned to a classroom.</p>
+              </div>
+            )}
+          </section>
+        )}
+        {/* Practice Mode Tab */}
+        {sideTab === 'practice' && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Gamepad2 className="h-6 w-6 text-yellow-500" />
+              <h2 className="text-2xl font-bold text-gray-900">Practice Mode</h2>
+            </div>
+            <Card className="bg-white/95 shadow-lg">
+              <CardContent className="p-6">
+                <p className="text-sm text-gray-600 mb-4">Practice independently with interactive activities to strengthen your concepts.</p>
+                <Button
+                  onClick={() => navigate('/student/practice')}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                >
+                  <Gamepad2 className="h-4 w-4 mr-2" />
+                  Go to Practice Mode
+                </Button>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+        </div>
       </main>
 
-      {/* Game Modal */}
-      <Dialog
+  {/* Game Modal */}
+  <Dialog
         open={showGameModal}
         onOpenChange={(open) => {
           if (!open) {
@@ -3003,11 +2895,11 @@ export const StudentPortalPage = () => {
           </DialogHeader>
           
           {currentGame && (
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {/* Game Info */}
               <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border">
                 <h3 className="font-semibold mb-2">Game Configuration</h3>
-                <div className="flex gap-4 text-sm">
+                <div className="flex flex-wrap gap-3 sm:gap-4 text-sm">
                   <span>
                     <strong>Difficulty:</strong> 
                     <Badge variant="outline" className="ml-1">
@@ -3135,7 +3027,7 @@ export const StudentPortalPage = () => {
                 })()}
               </div>
 
-              <div className="mt-4 flex justify-between">
+              <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-between">
                 <Button 
                   onClick={(e) => {
                     // FIX 2: Prevent event propagation
@@ -3194,7 +3086,7 @@ export const StudentPortalPage = () => {
                 {currentQuestionPaper.description}
               </div>
             )}
-            <div className="flex items-center gap-4 mt-2 text-sm">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-sm">
               <Badge variant="secondary">
                 {currentQuestionPaper?.questions?.length || 0} Questions
               </Badge>
@@ -3304,7 +3196,7 @@ export const StudentPortalPage = () => {
 
               {/* Progress indicator */}
               <div className="sticky bottom-0 bg-white border-t-2 border-gray-200 p-4 -mx-6 -mb-4">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
                   <div className="text-sm text-gray-600">
                     <span className="font-semibold text-blue-600">
                       {Object.keys(questionPaperAnswers).length}
@@ -3312,7 +3204,7 @@ export const StudentPortalPage = () => {
                     {' / '}
                     {currentQuestionPaper.questions.length} questions answered
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {(() => {
                       const hasTextAnswer = Object.values(questionPaperAnswers).some((answer) => {
                         if (typeof answer === 'string') return stripHtml(answer).trim().length > 0;

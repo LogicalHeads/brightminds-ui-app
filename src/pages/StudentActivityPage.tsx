@@ -60,7 +60,7 @@ export const StudentActivityPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
         <Header />
-        <div className="container mx-auto px-6 py-8 pt-32">
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-28 sm:pt-32">
           <p className="text-center text-muted-foreground">Student or room information not found</p>
           <div className="flex justify-center mt-4">
             <Button onClick={() => navigate('/rooms')}>Back to Rooms</Button>
@@ -74,7 +74,7 @@ export const StudentActivityPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-[hsl(280,40%,98%)] via-[hsl(280,30%,95%)] to-[hsl(35,95%,95%)]">
       <Header />
       
-      <main className="container mx-auto px-6 py-8 pt-32">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-28 sm:pt-32">
         <Button
           variant="ghost"
           className="mb-6"
@@ -87,12 +87,12 @@ export const StudentActivityPage = () => {
         {/* Student Info Card */}
         <Card className="mb-8 shadow-lg border-2">
           <CardContent className="pt-6">
-            <div className="flex items-center gap-6">
-              <Avatar className="h-24 w-24 text-2xl font-bold bg-primary text-primary-foreground">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+              <Avatar className="h-20 w-20 sm:h-24 sm:w-24 text-xl sm:text-2xl font-bold bg-primary text-primary-foreground">
                 <AvatarFallback>{getInitials(student.name)}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h1 className="text-2xl font-bold mb-2">{student.name}</h1>
+                <h1 className="text-xl sm:text-2xl font-bold mb-2">{student.name}</h1>
                 <div className="flex gap-2 flex-wrap">
                   <Badge variant="secondary">{room.name}</Badge>
                   {student.primary_language && (
@@ -123,7 +123,7 @@ export const StudentActivityPage = () => {
 
         {/* Activities Section */}
         <div className="mb-6">
-          <h2 className="text-2xl font-semibold mb-2">Choose an Activity</h2>
+          <h2 className="text-xl sm:text-2xl font-semibold mb-2">Choose an Activity</h2>
           <p className="text-muted-foreground">Select an activity for {student.name.split(' ')[0]} to begin</p>
         </div>
 
