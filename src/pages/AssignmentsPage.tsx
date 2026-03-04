@@ -1018,7 +1018,7 @@ function AssignmentsPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <Header />
       
-      <main className="container mx-auto px-6 py-8 pt-32">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-28 sm:pt-32">
         <Button
           variant="ghost"
           size="sm"
@@ -1029,7 +1029,7 @@ function AssignmentsPage() {
           Back to Dashboard
         </Button>
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-8">
           <div className="flex items-center gap-4">
             <div>
               <h1 className="text-2xl font-bold mb-2">Assignments</h1>
@@ -1042,8 +1042,8 @@ function AssignmentsPage() {
               )}
             </div>
           </div>
-          <div className="flex gap-2">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+            <div className="flex flex-wrap items-center gap-2">
               {realtimeConnected ? (
                 <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -1058,7 +1058,7 @@ function AssignmentsPage() {
               <Button
                 variant="outline"
                 onClick={refreshData}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full sm:w-auto"
               >
                 <RefreshCw className="h-4 w-4" />
                 Refresh
@@ -1083,12 +1083,12 @@ function AssignmentsPage() {
               }
             }}>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="w-full sm:w-auto">
                   <FileText className="mr-2 h-4 w-4" />
                   Create Assignment
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto px-6">
+              <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto px-4 sm:px-6">
               <DialogHeader>
                 <DialogTitle>{isEditMode ? 'Edit Assignment' : 'Create New Assignment'}</DialogTitle>
               </DialogHeader>
@@ -1496,7 +1496,7 @@ function AssignmentsPage() {
         <div className="mb-6">
           <Label>Filter by Room</Label>
           <Select value={selectedRoomFilter} onValueChange={setSelectedRoomFilter}>
-            <SelectTrigger className="w-[250px]">
+            <SelectTrigger className="w-full sm:w-[250px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -1513,11 +1513,11 @@ function AssignmentsPage() {
         {loading ? (
           <LoadingState type="assignments" count={6} />
         ) : filteredAssignments.length > 0 ? (
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-6">
             {filteredAssignments.map((assignment) => (
               <Card key={assignment.id} className="group hover:shadow-xl hover:shadow-blue-100 transition-all duration-300 hover:-translate-y-1 border-0 shadow-md bg-gradient-to-br from-white to-gray-50/50">
                 <CardHeader className="pb-4">
-                  <div className="flex justify-between items-start">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
@@ -1531,7 +1531,7 @@ function AssignmentsPage() {
                           <CardTitle className="text-lg font-bold text-gray-800 group-hover:text-blue-700 transition-colors">
                             {assignment.title}
                           </CardTitle>
-                          <div className="flex gap-2 mt-1">
+                          <div className="flex flex-wrap gap-2 mt-1">
                             <Badge 
                               variant={assignment.status === 'active' ? 'default' : 'secondary'}
                               className={assignment.status === 'active' ? 'bg-green-100 text-green-700 border-green-300' : ''}
@@ -1552,7 +1552,7 @@ function AssignmentsPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -1593,7 +1593,7 @@ function AssignmentsPage() {
                   {/* Quick Progress Overview */}
                   {assignment.totalStudents > 0 && (
                     <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100">
-                      <div className="flex justify-between items-center mb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-blue-600" />
                           <span className="text-sm font-semibold text-gray-800">Student Progress</span>
@@ -1639,7 +1639,7 @@ function AssignmentsPage() {
                   
                   {assignment.totalStudents === 0 && (
                     <div className="mb-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
                             <Users className="h-4 w-4 text-amber-600" />
@@ -1653,7 +1653,7 @@ function AssignmentsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleViewAssignmentDetails(assignment)}
-                          className="text-xs px-4 py-2 h-8 border-amber-300 text-amber-700 hover:bg-amber-100"
+                          className="text-xs px-4 py-2 h-8 border-amber-300 text-amber-700 hover:bg-amber-100 w-full sm:w-auto"
                         >
                           <Eye className="h-3 w-3 mr-1" />
                           View Details
@@ -1663,7 +1663,7 @@ function AssignmentsPage() {
                   )}
 
                   {assignment.due_date && (
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-3 border-t border-gray-100">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
                           <Calendar className="h-3 w-3 text-red-600" />
@@ -1702,7 +1702,7 @@ function AssignmentsPage() {
 
       {/* Assignment Details Modal */}
       <Dialog open={showAssignmentDetails} onOpenChange={setShowAssignmentDetails}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Eye className="h-5 w-5 text-blue-600" />
@@ -1727,7 +1727,7 @@ function AssignmentsPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-blue-900 mb-2">Progress Overview</h3>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <div className="text-center p-2 bg-green-100 rounded">
                         <div className="text-lg font-bold text-green-800">
                           {assignmentProgress.filter(p => p.status === 'completed').length}
@@ -1755,7 +1755,8 @@ function AssignmentsPage() {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Student Progress</h3>
                 <div className="border rounded-lg overflow-hidden">
-                  <div className="bg-gray-50 px-4 py-3 border-b">
+                  <div className="overflow-x-auto">
+                  <div className="bg-gray-50 px-4 py-3 border-b min-w-[760px]">
                     <div className="grid grid-cols-6 gap-4 text-sm font-medium text-gray-700">
                       <div className="col-span-2">Student</div>
                       <div>Status</div>
@@ -1764,7 +1765,7 @@ function AssignmentsPage() {
                       <div>Last Activity</div>
                     </div>
                   </div>
-                  <div className="divide-y">
+                  <div className="divide-y min-w-[760px]">
                     {assignmentProgress.map((student) => (
                       <div key={student.id} className="px-4 py-3 hover:bg-gray-50">
                         <div className="grid grid-cols-6 gap-4 items-center">
@@ -1824,6 +1825,7 @@ function AssignmentsPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
                   </div>
                 </div>
               </div>

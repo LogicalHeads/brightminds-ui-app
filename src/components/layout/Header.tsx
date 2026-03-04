@@ -37,13 +37,13 @@ export const Header = () => {
   };
 
     return (
-      <header className="border-b border-border bg-card shadow-sm fixed top-0 left-0 right-0 w-full z-50 h-24">
-        <div className="container mx-auto px-6 h-full">
+      <header className="border-b border-border bg-card shadow-sm fixed top-0 left-0 right-0 w-full z-50 h-20 sm:h-24">
+        <div className="container mx-auto px-3 sm:px-6 h-full">
           <div className="flex items-center justify-between h-full relative">
             {/* Logos - Left Side */}
-            <Link to="/dashboard" className="flex items-center gap-4 group">
+            <Link to="/dashboard" className="flex items-center gap-2 sm:gap-4 group min-w-0">
               {/* BrightMinds Logo */}
-              <div className="relative w-32 h-32 flex items-center justify-center">
+              <div className="relative w-20 h-20 sm:w-32 sm:h-32 flex items-center justify-center shrink-0">
                 {/* Bulb Head Glow - Focused on top part */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-20 bg-gradient-radial from-yellow-300/80 via-yellow-400/50 to-transparent rounded-full blur-2xl animate-bulb-shine"></div>
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-16 bg-gradient-radial from-white/60 via-yellow-200/50 to-transparent rounded-full blur-xl animate-bulb-shine-delayed"></div>
@@ -55,7 +55,7 @@ export const Header = () => {
                 <img
                   src="/brightminds-logo1.png"
                   alt="BrightMinds Logo"
-                  className="h-28 w-28 object-contain relative z-10 animate-bulb-brightness"
+                  className="h-16 w-16 sm:h-28 sm:w-28 object-contain relative z-10 animate-bulb-brightness"
                 />
                 
                 {/* Enhanced Sparkles on Bulb Head */}
@@ -69,18 +69,18 @@ export const Header = () => {
               </div>
               
               {/* School Logo */}
-              <div className="flex items-center justify-center w-20 h-20">
+              <div className="flex items-center justify-center w-12 h-12 sm:w-20 sm:h-20 shrink-0">
                 <img
                   src="https://stanleymills.peelschools.org/images/logo.svg"
                   alt="Stanley Mills Public School Logo"
-                  className="h-16 w-16 object-contain transition-transform group-hover:scale-105"
+                  className="h-10 w-10 sm:h-16 sm:w-16 object-contain transition-transform group-hover:scale-105"
                 />
               </div>
             </Link>
             
             {/* School Name - Centered & Clickable */}
-            <Link to="/dashboard" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center hover:opacity-80 transition-opacity cursor-pointer">
-              <h1 className="text-3xl font-semibold tracking-wide bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 bg-clip-text text-transparent">
+            <Link to="/dashboard" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center hover:opacity-80 transition-opacity cursor-pointer hidden lg:block">
+              <h1 className="text-2xl xl:text-3xl font-semibold tracking-wide bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 bg-clip-text text-transparent whitespace-nowrap">
                 Stanly Mills Public School
               </h1>
             </Link>

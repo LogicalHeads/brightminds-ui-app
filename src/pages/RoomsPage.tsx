@@ -205,7 +205,7 @@ export const RoomsPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <Header />
       
-      <main className="container mx-auto px-6 py-8 pt-32">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-28 sm:pt-32">
         <Button
           variant="ghost"
           size="sm"
@@ -217,15 +217,15 @@ export const RoomsPage = () => {
         </Button>
 
             {/* Search bar UI */}
-            <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
+            <div className="flex flex-col md:flex-row gap-4 mb-6 items-stretch md:items-center">
               <input
                 type="text"
                 placeholder="Search rooms..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-xs border rounded px-3 py-2 shadow-sm"
+                className="w-full md:w-auto md:max-w-xs border rounded px-3 py-2 shadow-sm"
               />
-              <div className="flex gap-2 items-center">
+              <div className="flex flex-wrap gap-2 items-center">
                 <label htmlFor="sortBy" className="text-sm">Sort by:</label>
                 <select
                   id="sortBy"
@@ -250,7 +250,7 @@ export const RoomsPage = () => {
               </div>
             </div>
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
           <div className="flex items-center gap-4">
             <div>
               <h1 className="text-2xl font-bold mb-2">Virtual Rooms</h1>
@@ -259,7 +259,7 @@ export const RoomsPage = () => {
           </div>
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <DoorOpen className="mr-2 h-4 w-4" />
                 Create Room
               </Button>
@@ -306,7 +306,7 @@ export const RoomsPage = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           </div>
         ) : filteredRooms.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredRooms.map((room) => (
               <Card key={room.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
@@ -337,17 +337,18 @@ export const RoomsPage = () => {
                   {room.description && (
                     <p className="text-sm text-muted-foreground mb-4">{room.description}</p>
                   )}
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Users className="h-4 w-4" />
                       <span className="text-sm">{room.student_count || 0} students</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                       <Button
                         variant="default"
                         size="sm"
                         onClick={() => navigate(`/rooms/${room.id}`)}
                         aria-label="Open Room"
+                        className="w-full sm:w-auto"
                       >
                         <DoorOpen className="h-4 w-4 mr-2" />
                         Open
@@ -357,6 +358,7 @@ export const RoomsPage = () => {
                         size="sm"
                         onClick={() => openAssignDialog(room)}
                         aria-label="View and manage assigned students"
+                        className="w-full sm:w-auto"
                       >
                         <Settings className="h-4 w-4 mr-2" />
                         Assigned Students
@@ -378,7 +380,7 @@ export const RoomsPage = () => {
         )}
 
         <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="w-[95vw] max-w-2xl">
             <DialogHeader>
               <DialogTitle>Assigned Students in {selectedRoom?.name}</DialogTitle>
             </DialogHeader>

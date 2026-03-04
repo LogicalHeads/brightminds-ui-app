@@ -60,9 +60,9 @@ export const TeacherRoomChat: React.FC<TeacherRoomChatProps> = ({ auth0UserId, r
   const handleSend = async () => {
     if (!input.trim()) return;
     try {
-      const row = await chatAPI.sendForTeacher(auth0UserId, roomId, input.trim(), teacherName);
+      await chatAPI.sendForTeacher(auth0UserId, roomId, input.trim(), teacherName);
       setInput('');
-      setMessages((prev) => (prev.some(m => m.id === row.id) ? prev : [...prev, row]));
+      // Do not add message here; rely on realtime subscription
     } catch (e: any) { setError(e?.message || 'Failed to send message'); }
   };
 

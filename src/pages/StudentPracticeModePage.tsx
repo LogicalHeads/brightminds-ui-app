@@ -161,21 +161,22 @@ const StudentPracticeModePage: React.FC = () => {
         zIndex: 10,
         background: "linear-gradient(90deg, #e0f7fa 60%, #b3e0ff 100%)",
         boxShadow: "0 -2px 12px #b3e0ff33",
-        padding: "1.2rem 0",
+        padding: "0.9rem 0.75rem",
         display: "flex",
         justifyContent: "center",
-        gap: "1.5rem",
+        gap: "0.75rem",
+        flexWrap: "wrap",
       }}>
         <button
           className={styles.bigButton}
-          style={{ minWidth: 180, fontSize: "1.15rem", background: "#3498db", color: "#fff", border: "2px solid #3498db" }}
+          style={{ minWidth: 140, fontSize: "1rem", background: "#3498db", color: "#fff", border: "2px solid #3498db", flex: "1 1 180px", maxWidth: 320 }}
           onClick={handleStartNew}
         >
           🎯 Start New Session
         </button>
         <button
           className={styles.bigButton}
-          style={{ minWidth: 120, fontSize: "1.15rem", background: "#2980b9", color: "#fff", border: "2px solid #2980b9" }}
+          style={{ minWidth: 120, fontSize: "1rem", background: "#2980b9", color: "#fff", border: "2px solid #2980b9", flex: "1 1 140px", maxWidth: 220 }}
           onClick={handleHome}
         >
           🏠 Home

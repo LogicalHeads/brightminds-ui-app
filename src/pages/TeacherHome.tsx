@@ -297,7 +297,7 @@ const TeacherHome = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <Header />
       
-      <main className="container mx-auto px-6 py-8 pt-32">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 pt-28 sm:pt-32">
         {/* Announcement Banner */}
         <AnnouncementBanner />
 
@@ -367,7 +367,7 @@ const TeacherHome = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5 mb-10">
           <QuickActionCard
             title="Students"
             icon={UserPlus}
@@ -495,7 +495,7 @@ const TeacherHome = () => {
                           <div className="text-xs font-semibold text-orange-700 mb-2 uppercase tracking-wide">Student Activity</div>
                           
                           {/* Circular Progress Indicators */}
-                          <div className="flex justify-between items-center">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 items-stretch">
                             <div className="flex flex-col items-center">
                               <div className="relative w-12 h-12">
                                 <svg className="transform -rotate-90 w-12 h-12">
@@ -586,7 +586,7 @@ const TeacherHome = () => {
                               <span className="text-xs text-gray-600">Not Started</span>
                             </div>
                             
-                            <div className="flex flex-col items-center justify-center h-12 px-3 bg-gradient-to-br from-orange-100 to-amber-100 rounded-lg border border-orange-200">
+                            <div className="flex flex-col items-center justify-center min-h-12 px-3 bg-gradient-to-br from-orange-100 to-amber-100 rounded-lg border border-orange-200">
                               <span className="text-2xl font-bold text-orange-700">{completionRate}%</span>
                               <span className="text-xs text-orange-600">Complete</span>
                             </div>
@@ -722,7 +722,7 @@ const TeacherHome = () => {
                         </div>
                         
                         {/* Performance Metrics - Horizontal Layout */}
-                        <div className="flex gap-2 mt-3 pt-3 border-t border-purple-100">
+                        <div className="flex flex-col sm:flex-row gap-2 mt-3 pt-3 border-t border-purple-100">
                           <div className="flex-1 flex items-center gap-2 p-2 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-lg">
                             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-500 shadow-md">
                               <span className="text-sm font-bold text-white">{submissionRate}%</span>
@@ -750,7 +750,7 @@ const TeacherHome = () => {
                 
                 {/* Pagination Controls */}
                 {assignments.length > 1 && (
-                  <div className="mt-4 flex items-center justify-between">
+                  <div className="mt-4 flex items-center justify-between gap-2 flex-wrap">
                     {/* Previous Button */}
                     <button
                       onClick={() => {
@@ -830,7 +830,7 @@ const TeacherHome = () => {
               {helpRequests.map((request) => (
                 <div
                   key={request.id}
-                  className="p-5 rounded-xl bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200 hover:shadow-lg transition-all duration-300 flex justify-between items-center"
+                  className="p-5 rounded-xl bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200 hover:shadow-lg transition-all duration-300 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3"
                 >
                   <div className="flex-1">
                     <p className="font-bold text-red-800">{request.students?.name}</p>
@@ -842,7 +842,7 @@ const TeacherHome = () => {
                   <Button 
                     size="sm" 
                     onClick={() => handleResolveRequest(request.id)}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl shadow-md hover:shadow-lg transition-all ml-4"
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-xl shadow-md hover:shadow-lg transition-all sm:ml-4 w-full sm:w-auto"
                   >
                     <CheckCircle2 className="h-4 w-4 mr-2" />
                     Resolve
