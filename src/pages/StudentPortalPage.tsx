@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BookOpen, Calendar, Clock, User, Home, HelpCircle, Bell, Users, Play, Gamepad2, CheckCircle, FileText, MessageCircle, LogOut } from 'lucide-react';
+import { BookOpen, Calendar, Clock, User, Home, HelpCircle, Bell, Users, Play, Gamepad2, CheckCircle, FileText, MessageCircle } from 'lucide-react';
 import StudentChat from '@/components/StudentChat';
 import GenieChatWidget from '@/components/GenieChatWidget';
 import { toast } from 'sonner';
@@ -632,9 +632,7 @@ interface AssignmentAttempt {
 export const StudentPortalPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const tokenFromUrl = searchParams?.get('token') ?? null;
-  const tokenFromStorage = typeof window !== 'undefined' ? localStorage.getItem('student_presigned_token') : null;
-  const token = tokenFromUrl || tokenFromStorage || null;
+  const token = searchParams?.get('token') ?? null;
   const schoolIdParam = searchParams?.get('school_id') ?? null;
   const resubmitAssignmentId = searchParams?.get('resubmit_assignment_id') ?? null;
   const resubmitHandledRef = useRef(false);
@@ -644,10 +642,10 @@ export const StudentPortalPage = () => {
 
   // Store token in localStorage for PWA redirect (only if explicitly accessing student portal)
   useEffect(() => {
-    if (tokenFromUrl && window.location.pathname === '/student-portal') {
-      localStorage.setItem('student_presigned_token', tokenFromUrl);
+    if (token && window.location.pathname === '/student-portal') {
+      localStorage.setItem('student_presigned_token', token);
     }
-  }, [tokenFromUrl]);
+  }, [token]);
 
   useEffect(() => {
     if (schoolIdParam) {
@@ -2425,23 +2423,19 @@ export const StudentPortalPage = () => {
     }
   };
 
-  const handleLogout = () => {
-    try {
-      localStorage.removeItem('student_presigned_token');
-      localStorage.removeItem('student_school_id');
-      localStorage.removeItem('student_assignment_attempts');
-      localStorage.removeItem('student_ai_submission_map');
-      localStorage.removeItem('student_id');
-    } catch (error) {
-      console.warn('Failed to clear student session data:', error);
-    }
-
-    toast.success('Logged out successfully');
-    navigate('/student');
-  };
-
   if (!token) {
-    return <Navigate to="/student" replace />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle className="text-red-600">Access Denied</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>No access token provided. Please use the link provided by your teacher.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (loading) {
@@ -2520,15 +2514,6 @@ export const StudentPortalPage = () => {
               <span>Refreshing...</span>
             </div>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
         </div>
         <div className="flex-1 flex flex-col">
           <Tabs value={sideTab} onValueChange={setSideTab} className="flex-1 flex flex-col">
