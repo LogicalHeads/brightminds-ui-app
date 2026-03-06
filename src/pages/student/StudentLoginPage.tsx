@@ -36,7 +36,7 @@ const StudentLoginPage = () => {
   useEffect(() => {
     const token = getStudentSession();
     if (token) {
-      navigate('/student/home');
+      navigate('/student-portal');
     }
   }, [navigate]);
 
@@ -80,9 +80,21 @@ const StudentLoginPage = () => {
 
     try {
       const result = await studentAuthAPI.setPin(studentPublicId.trim(), pin);
-      saveStudentSession(result.sessionToken, result.expiresAt, studentPublicId.trim().toUpperCase());
+      const normalizedId = studentPublicId.trim().toUpperCase();
+      saveStudentSession(result.sessionToken, result.expiresAt, normalizedId);
+
+      // If the backend returns an access token, store it for the student portal
+      if (result.accessToken) {
+        try {
+          sessionStorage.setItem('student_presigned_token', result.accessToken);
+        } catch {
+          localStorage.setItem('student_presigned_token', result.accessToken);
+        }
+      }
+
       toast.success('PIN created! Welcome to BrightMinds! 🎉');
-      navigate('/student/home');
+      // After creating a PIN, send students straight to the student portal
+      navigate('/student-portal');
     } catch (err: any) {
       setError(err.message || 'Failed to create PIN');
     } finally {
@@ -101,15 +113,22 @@ const StudentLoginPage = () => {
 
     try {
       const result = await studentAuthAPI.loginPin(studentPublicId.trim(), pin);
-      saveStudentSession(result.sessionToken, result.expiresAt, studentPublicId.trim().toUpperCase());
+      const normalizedId = studentPublicId.trim().toUpperCase();
+      saveStudentSession(result.sessionToken, result.expiresAt, normalizedId);
 
       if (result.accessToken) {
-        localStorage.setItem('student_presigned_token', result.accessToken);
+        // Prefer sessionStorage so the token is not persisted beyond the browser session
+        try {
+          sessionStorage.setItem('student_presigned_token', result.accessToken);
+        } catch {
+          // Fallback to localStorage if sessionStorage is unavailable (e.g., privacy mode)
+          localStorage.setItem('student_presigned_token', result.accessToken);
+        }
       }
 
-      const redirectUrl = result.accessUrl || (result.accessToken
-        ? `/student-portal?token=${encodeURIComponent(result.accessToken)}`
-        : '/student/home');
+      // Always send students to the new student portal after successful PIN validation
+      // Use a clean URL without exposing the token as a query parameter
+      const redirectUrl = '/student-portal';
 
       toast.success('Welcome back! 🎉');
 

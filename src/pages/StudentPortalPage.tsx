@@ -632,7 +632,18 @@ interface AssignmentAttempt {
 export const StudentPortalPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const token = searchParams?.get('token') ?? null;
+  const tokenFromQuery = searchParams?.get('token') ?? null;
+  // Prefer sessionStorage token when query param is not present, with localStorage fallback
+  let tokenFromStorage: string | null = null;
+  try {
+    tokenFromStorage = sessionStorage.getItem('student_presigned_token');
+    if (!tokenFromStorage) {
+      tokenFromStorage = localStorage.getItem('student_presigned_token');
+    }
+  } catch {
+    tokenFromStorage = null;
+  }
+  const token = tokenFromQuery || tokenFromStorage;
   const schoolIdParam = searchParams?.get('school_id') ?? null;
   const resubmitAssignmentId = searchParams?.get('resubmit_assignment_id') ?? null;
   const resubmitHandledRef = useRef(false);
@@ -640,10 +651,14 @@ export const StudentPortalPage = () => {
   const resubmitAttemptOverrideRef = useRef<Record<string, AssignmentAttempt>>({});
   const hasLoadedRef = useRef(false);
 
-  // Store token in localStorage for PWA redirect (only if explicitly accessing student portal)
+  // Store token in storage for PWA redirect (only if explicitly accessing student portal)
   useEffect(() => {
     if (token && window.location.pathname === '/student-portal') {
-      localStorage.setItem('student_presigned_token', token);
+      try {
+        sessionStorage.setItem('student_presigned_token', token);
+      } catch {
+        localStorage.setItem('student_presigned_token', token);
+      }
     }
   }, [token]);
 
