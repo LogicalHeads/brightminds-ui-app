@@ -84,13 +84,20 @@ Deno.serve(async (req) => {
     // Look up student
     const { data: student, error: lookupError } = await supabase
       .from('students')
-      .select('id, pin_hash, pin_reset_required')
+      .select('id, pin_hash, pin_reset_required, access_token')
       .eq('student_public_id', trimmedId)
       .single();
 
     if (lookupError || !student) {
       return new Response(JSON.stringify({ error: 'Student not found' }), {
         status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!student.access_token) {
+      return new Response(JSON.stringify({ error: 'Student not onboarded. Please contact admin.' }), {
+        status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -106,15 +113,20 @@ Deno.serve(async (req) => {
     // Hash the PIN
     const { hash: pinHash, salt: pinSalt } = await hashPin(pin);
 
+    // Ensure last_login_at is set
+    const updates: Record<string, unknown> = {
+      pin_hash: `${pinSalt}:${pinHash}`,
+      pin_set_at: new Date().toISOString(),
+      pin_reset_required: false,
+      last_login_at: new Date().toISOString(),
+    };
+
+    const accessToken = (student as any).access_token as string;
+
     // Update student record
     const { error: updateError } = await supabase
       .from('students')
-      .update({
-        pin_hash: `${pinSalt}:${pinHash}`,
-        pin_set_at: new Date().toISOString(),
-        pin_reset_required: false,
-        last_login_at: new Date().toISOString(),
-      })
+      .update(updates)
       .eq('id', student.id);
 
     if (updateError) throw updateError;
@@ -133,9 +145,14 @@ Deno.serve(async (req) => {
 
     if (sessionError) throw sessionError;
 
+    const origin = req.headers.get('origin') || 'http://localhost:8081';
+    const accessUrl = accessToken ? `${origin}/student-portal?token=${accessToken}` : null;
+
     return new Response(JSON.stringify({
       sessionToken: token,
       expiresAt: expiresAt.toISOString(),
+      accessToken,
+      accessUrl,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

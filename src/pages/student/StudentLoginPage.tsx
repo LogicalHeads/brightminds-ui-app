@@ -10,6 +10,7 @@ import {
   studentAuthAPI,
   saveStudentSession,
   getStudentSession,
+  clearStudentSession,
 } from '@/api/studentAuthApi';
 
 type Step = 'id-entry' | 'create-pin' | 'enter-pin';
@@ -36,7 +37,13 @@ const StudentLoginPage = () => {
   useEffect(() => {
     const token = getStudentSession();
     if (token) {
-      navigate('/student/home');
+      const accessToken = localStorage.getItem('student_presigned_token');
+      if (accessToken) {
+        navigate(`/student-portal?token=${encodeURIComponent(accessToken)}`);
+      } else {
+        clearStudentSession();
+        toast.info('Please log in again to continue.');
+      }
     }
   }, [navigate]);
 
@@ -80,9 +87,38 @@ const StudentLoginPage = () => {
 
     try {
       const result = await studentAuthAPI.setPin(studentPublicId.trim(), pin);
-      saveStudentSession(result.sessionToken, result.expiresAt, studentPublicId.trim().toUpperCase());
+      let sessionToken = result.sessionToken;
+      let expiresAt = result.expiresAt;
+      let accessToken = result.accessToken as string | undefined;
+      let accessUrl = result.accessUrl as string | undefined;
+
+      // Backward-compatible fallback: if set-pin response doesn't include portal token,
+      // perform login using the same PIN to obtain accessToken/accessUrl.
+      if (!accessToken && !accessUrl) {
+        const loginResult = await studentAuthAPI.loginPin(studentPublicId.trim(), pin);
+        sessionToken = loginResult.sessionToken || sessionToken;
+        expiresAt = loginResult.expiresAt || expiresAt;
+        accessToken = loginResult.accessToken;
+        accessUrl = loginResult.accessUrl;
+      }
+
+      saveStudentSession(sessionToken, expiresAt, studentPublicId.trim().toUpperCase());
+
+      if (accessToken) {
+        localStorage.setItem('student_presigned_token', accessToken);
+      }
+
+      const redirectUrl = accessUrl || (accessToken
+        ? `/student-portal?token=${encodeURIComponent(accessToken)}`
+        : '/student');
+
       toast.success('PIN created! Welcome to BrightMinds! 🎉');
-      navigate('/student/home');
+
+      if (redirectUrl.startsWith('http')) {
+        window.location.replace(redirectUrl);
+      } else {
+        navigate(redirectUrl);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to create PIN');
     } finally {
@@ -109,7 +145,7 @@ const StudentLoginPage = () => {
 
       const redirectUrl = result.accessUrl || (result.accessToken
         ? `/student-portal?token=${encodeURIComponent(result.accessToken)}`
-        : '/student/home');
+        : '/student-portal');
 
       toast.success('Welcome back! 🎉');
 

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BookOpen, Calendar, Clock, User, Home, HelpCircle, Bell, Users, Play, Gamepad2, CheckCircle, FileText, MessageCircle } from 'lucide-react';
+import { BookOpen, Calendar, Clock, User, Home, HelpCircle, Bell, Users, Play, Gamepad2, CheckCircle, FileText, MessageCircle, LogOut } from 'lucide-react';
 import StudentChat from '@/components/StudentChat';
 import GenieChatWidget from '@/components/GenieChatWidget';
 import { toast } from 'sonner';
@@ -632,7 +632,11 @@ interface AssignmentAttempt {
 export const StudentPortalPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const token = searchParams?.get('token') ?? null;
+  const tokenFromQuery = searchParams?.get('token') ?? null;
+  const tokenFromStorage = typeof window !== 'undefined'
+    ? localStorage.getItem('student_presigned_token')
+    : null;
+  const token = tokenFromQuery ?? tokenFromStorage;
   const schoolIdParam = searchParams?.get('school_id') ?? null;
   const resubmitAssignmentId = searchParams?.get('resubmit_assignment_id') ?? null;
   const resubmitHandledRef = useRef(false);
@@ -689,6 +693,21 @@ export const StudentPortalPage = () => {
   const [isSubmittingQuestionPaper, setIsSubmittingQuestionPaper] = useState(false);
   const [submissionProgress, setSubmissionProgress] = useState(0);
   const [sideTab, setSideTab] = useState('dashboard');
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('bm_student_session');
+      localStorage.removeItem('bm_student_session_expires');
+      localStorage.removeItem('bm_student_public_id');
+      localStorage.removeItem('student_presigned_token');
+      localStorage.removeItem('student_school_id');
+      localStorage.removeItem('student_id');
+    } catch {
+      // Ignore storage errors
+    }
+    toast.success('Logged out successfully');
+    navigate('/student');
+  };
 
   // FIX 1 & 4: Explicitly reset all modal states on component mount and clear persisted state
   useEffect(() => {
@@ -2497,6 +2516,15 @@ export const StudentPortalPage = () => {
               <h1 className="text-lg font-bold text-gray-900 truncate">{studentData.name}</h1>
               <p className="text-xs text-gray-600 truncate">{studentData.email || 'Student Portal'}</p>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="ml-auto"
+            >
+              <LogOut className="h-4 w-4 mr-1" />
+              Logout
+            </Button>
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="rounded-lg border bg-white px-3 py-2 shadow-sm">

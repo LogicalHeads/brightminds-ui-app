@@ -37,13 +37,20 @@ Deno.serve(async (req) => {
     // Look up student by public ID
     const { data: student, error } = await supabase
       .from('students')
-      .select('id, name, teacher_id, pin_hash, pin_set_at, pin_reset_required')
+      .select('id, name, teacher_id, pin_hash, pin_set_at, pin_reset_required, access_token')
       .eq('student_public_id', trimmedId)
       .single();
 
     if (error || !student) {
-      return new Response(JSON.stringify({ error: 'Student ID not found' }), {
+      return new Response(JSON.stringify({ error: 'Student ID not found or not onboarded by admin' }), {
         status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!student.access_token) {
+      return new Response(JSON.stringify({ error: 'Student not onboarded. Please contact admin.' }), {
+        status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

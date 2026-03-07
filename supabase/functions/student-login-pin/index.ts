@@ -89,6 +89,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (!student.access_token) {
+      return new Response(JSON.stringify({ error: 'Student not onboarded. Please contact admin.' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     if (!student.pin_hash) {
       return new Response(JSON.stringify({ error: 'PIN not set. Please create a PIN first.' }), {
         status: 400,
@@ -114,20 +121,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Ensure last_login_at and access_token are set on the student
+    // Ensure last_login_at is set on the student
     const updates: Record<string, unknown> = {
       last_login_at: new Date().toISOString(),
     };
 
-    let accessToken = (student as any).access_token as string | null;
-
-    // If access_token is missing for this student, generate and persist one
-    if (!accessToken) {
-      const bytes = new Uint8Array(32);
-      crypto.getRandomValues(bytes);
-      accessToken = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-      updates.access_token = accessToken;
-    }
+    const accessToken = (student as any).access_token as string;
 
     await supabase
       .from('students')
