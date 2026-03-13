@@ -35,6 +35,7 @@ import { LoadingState } from '@/components/LoadingState';
 function AssignmentsPage() {
   // Form state for assignment creation
   const [title, setTitle] = useState('');
+  const [titleAutoSource, setTitleAutoSource] = useState<'custom' | 'prebuilt' | null>(null);
   const [description, setDescription] = useState('');
   
   const { auth0UserId, isLoading: authLoading, isAuthenticated, user } = useAuth();
@@ -71,7 +72,7 @@ function AssignmentsPage() {
   const [grade, setGrade] = useState('');
   const [roomType, setRoomType] = useState<'prebuilt' | 'custom'>('custom'); // Default to Academic (custom)
   const [selectedPrebuiltRoom, setSelectedPrebuiltRoom] = useState('');
-  const [selectedRoom, setSelectedRoom] = useState('none');
+  const [selectedRoom, setSelectedRoom] = useState('');
   const [selectedQuestionPaper, setSelectedQuestionPaper] = useState('');
   const [questionPapers, setQuestionPapers] = useState<any[]>([]);
   const allowedGrades = useMemo(
@@ -88,6 +89,72 @@ function AssignmentsPage() {
     return trimmed.toLowerCase() === 'pre-k' || trimmed.toLowerCase() === 'k'
       ? trimmed
       : `Grade ${trimmed}`;
+  };
+
+  const handleQuestionPaperChange = (paperId: string) => {
+    setSelectedQuestionPaper(paperId);
+
+    // Auto-populate title only while creating Academic assignments.
+    if (!isEditMode && roomType === 'custom') {
+      const selectedPaper = questionPapers.find((paper) => paper.id === paperId);
+      if (selectedPaper?.title) {
+        setTitle(selectedPaper.title);
+        setTitleAutoSource('custom');
+      }
+    }
+  };
+
+  const handlePrebuiltActivityChange = (activityId: string) => {
+    setSelectedPrebuiltRoom(activityId);
+
+    const selectedGame = games.find((game) => game.id === activityId);
+    if (selectedGame) {
+      setAvailableCategories(selectedGame.categories || []);
+      // Reset category when game changes
+      setSelectedGameConfig((prev) => ({
+        ...prev,
+        category: selectedGame.categories?.[0] || '',
+      }));
+
+      // Auto-populate title only while creating Fun Activity assignments.
+      if (!isEditMode && roomType === 'prebuilt' && selectedGame.name) {
+        setTitle(selectedGame.name);
+        setTitleAutoSource('prebuilt');
+      }
+    }
+  };
+
+  const handleAssignmentTypeChange = (value: 'prebuilt' | 'custom') => {
+    setRoomType(value);
+
+    if (isEditMode) return;
+
+    if (value === 'custom') {
+      const selectedPaper = questionPapers.find((paper) => paper.id === selectedQuestionPaper);
+      if (selectedPaper?.title) {
+        setTitle(selectedPaper.title);
+        setTitleAutoSource('custom');
+        return;
+      }
+
+      if (titleAutoSource === 'prebuilt') {
+        setTitle('');
+        setTitleAutoSource(null);
+      }
+      return;
+    }
+
+    const selectedGame = games.find((game) => game.id === selectedPrebuiltRoom);
+    if (selectedGame?.name) {
+      setTitle(selectedGame.name);
+      setTitleAutoSource('prebuilt');
+      return;
+    }
+
+    if (titleAutoSource === 'custom') {
+      setTitle('');
+      setTitleAutoSource(null);
+    }
   };
 
   // Refresh assignment progress when modal is opened
@@ -757,10 +824,9 @@ function AssignmentsPage() {
       console.log('🔍 PRE-ASSIGNMENT CREATION DEBUG:');
       console.log(`   - selectedRoom value: "${selectedRoom}"`);
       console.log(`   - selectedRoom type: ${typeof selectedRoom}`);
-      console.log(`   - selectedRoom !== 'none': ${selectedRoom !== 'none'}`);
-      console.log(`   - selectedRoom && selectedRoom !== 'none': ${selectedRoom && selectedRoom !== 'none'}`);
+      console.log(`   - selectedRoom is set: ${Boolean(selectedRoom)}`);
 
-      const finalRoomId = selectedRoom && selectedRoom !== 'none' ? selectedRoom : null;
+      const finalRoomId = selectedRoom;
       console.log(`   - Final room_id will be: ${finalRoomId}`);
 
       // Inject the correct data array and force correct game_type for prebuilt assignments
@@ -846,7 +912,7 @@ function AssignmentsPage() {
         gameConfig: roomType === 'prebuilt' ? injectedGameConfig : null,
         title,
         description,
-        grade,
+        grade: grade || null,
         dueDate,
         status: 'active',
         room_id: finalRoomId, // Add room assignment
@@ -903,7 +969,7 @@ function AssignmentsPage() {
       console.log('╚════════════════════════════════════════════════════════════╝\n');
 
       // Debug: Show exactly what room data is being sent
-      if (roomType === 'prebuilt' && selectedRoom && selectedRoom !== 'none') {
+      if (roomType === 'prebuilt' && selectedRoom) {
         const selectedRoomData = rooms.find(r => r.id === selectedRoom);
         console.log('🎯 PRE-BUILT GAME + ROOM ASSIGNMENT:');
         console.log(`   Room Name: ${selectedRoomData?.name || 'Unknown'}`);
@@ -916,7 +982,7 @@ function AssignmentsPage() {
       const updateData = isEditMode ? {
         title,
         description,
-        grade,
+        grade: grade || null,
         due_date: dueDate,
         status: 'active',
         room_id: finalRoomId,
@@ -946,13 +1012,14 @@ function AssignmentsPage() {
       
       // Reset form
       setTitle('');
+      setTitleAutoSource(null);
       setGrade('');
       setDescription('');
       setDueDate('');
       setRoomType('prebuilt');
       setSelectedPrebuiltRoom('');
       setSelectedQuestionPaper('');
-      setSelectedRoom('none');
+      setSelectedRoom('');
       setSelectedGameConfig({ difficulty: 'easy', category: '' });
       setAvailableCategories([]);
       setIsEditMode(false);
@@ -991,24 +1058,19 @@ function AssignmentsPage() {
       toast.error('Please enter a title');
       return false;
     }
-    if (!grade) {
-      console.log('❌ Validation failed: No grade selected');
-      toast.error('Please select a grade level');
-      return false;
-    }
-    if (allowedGrades.length > 0 && !allowedGrades.includes(grade)) {
+    if (grade && allowedGrades.length > 0 && !allowedGrades.includes(grade)) {
       console.log('❌ Validation failed: Grade not assigned to teacher');
       toast.error('You can only create assignments for grades assigned by your admin');
-      return false;
-    }
-    if (!description.trim()) {
-      console.log('❌ Validation failed: No description');
-      toast.error('Please enter a description');
       return false;
     }
     if (!dueDate) {
       console.log('❌ Validation failed: No due date');
       toast.error('Please select a due date');
+      return false;
+    }
+    if (!selectedRoom) {
+      console.log('❌ Validation failed: No room selected');
+      toast.error('Please assign this assignment to a room');
       return false;
     }
     if (roomType === 'prebuilt' && !selectedPrebuiltRoom) {
@@ -1060,10 +1122,11 @@ function AssignmentsPage() {
   const handleEditAssignment = (assignment: any) => {
     // Populate form with existing assignment data
     setTitle(assignment.title);
+    setTitleAutoSource(null);
     setDescription(assignment.description || '');
     setGrade(assignment.grade || '');
     setDueDate(assignment.due_date ? new Date(assignment.due_date).toISOString().split('T')[0] : '');
-    setSelectedRoom(assignment.room_id || 'none');
+    setSelectedRoom(assignment.room_id || '');
     setSelectedQuestionPaper(assignment.question_paper_id || '');
     
     // Determine room type based on assignment data
@@ -1334,13 +1397,14 @@ function AssignmentsPage() {
                 setIsEditMode(false);
                 setEditingAssignmentId(null);
                 setTitle('');
+                setTitleAutoSource(null);
                 setGrade('');
                 setDescription('');
                 setDueDate('');
                 setRoomType('prebuilt');
                 setSelectedPrebuiltRoom('');
                 setSelectedQuestionPaper('');
-                setSelectedRoom('none');
+                setSelectedRoom('');
                 setSelectedGameConfig({ difficulty: 'easy', category: '' });
                 setAvailableCategories([]);
               }
@@ -1359,7 +1423,7 @@ function AssignmentsPage() {
                 {/* Room Type Selector */}
                 <div className="space-y-3">
                   <Label className="text-sm font-medium">Assignment Type *</Label>
-                  <Tabs value={roomType} onValueChange={(value: 'prebuilt' | 'custom') => setRoomType(value)}>
+                  <Tabs value={roomType} onValueChange={handleAssignmentTypeChange}>
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="custom" className="flex items-center gap-2">
                         <FileText className="h-4 w-4" />
@@ -1377,7 +1441,7 @@ function AssignmentsPage() {
                           {/* Question Paper Selection */}
                           <div className="space-y-2">
                             <Label className="text-sm font-medium">Select Question Paper *</Label>
-                            <Select value={selectedQuestionPaper} onValueChange={setSelectedQuestionPaper}>
+                            <Select value={selectedQuestionPaper} onValueChange={handleQuestionPaperChange}>
                               <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Choose a saved question paper..." />
                               </SelectTrigger>
@@ -1466,22 +1530,10 @@ function AssignmentsPage() {
                     <TabsContent value="prebuilt" className="mt-3">
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="prebuilt-room" className="text-sm font-medium">Select Activity</Label>
+                          <Label htmlFor="prebuilt-room" className="text-sm font-medium">Select Activity *</Label>
                           <Select 
                             value={selectedPrebuiltRoom} 
-                            onValueChange={(value) => {
-                              setSelectedPrebuiltRoom(value);
-                              // Find selected game and update available categories
-                              const selectedGame = games.find(g => g.id === value);
-                              if (selectedGame) {
-                                setAvailableCategories(selectedGame.categories || []);
-                                // Reset category when game changes
-                                setSelectedGameConfig(prev => ({ 
-                                  ...prev, 
-                                  category: selectedGame.categories?.[0] || '' 
-                                }));
-                              }
-                            }}
+                            onValueChange={handlePrebuiltActivityChange}
                           >
                             <SelectTrigger className="h-auto min-h-[50px]">
                               <SelectValue placeholder="Choose a game for your students...">
@@ -1649,18 +1701,74 @@ function AssignmentsPage() {
                   <Input
                     id="title"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                      setTitleAutoSource(null);
+                    }}
                     placeholder="Enter assignment title..."
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Room Assignment */}
+                <div className="space-y-2">
+                  <Label htmlFor="assignRoom" className="text-sm font-medium">Assign to Room *</Label>
+                  <Select value={selectedRoom} onValueChange={(value) => {
+                    setSelectedRoom(value);
+                    console.log('🏠 Room selection changed to:', value);
+                    const room = rooms.find(r => r.id === value);
+                    if (room) {
+                      console.log(`   📊 Selected room "${room.name}" has ${room.student_count || 0} students`);
+                    }
+                  }}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Choose a room..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rooms.length === 0 ? (
+                        <SelectItem value="no-rooms" disabled>
+                          No rooms available
+                        </SelectItem>
+                      ) : (
+                        rooms.map((room) => (
+                          <SelectItem key={room.id} value={room.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                                <span>{room.name}</span>
+                              </div>
+                              <span className="text-xs text-gray-500 ml-2">({room.student_count || 0} students)</span>
+                            </div>
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">
+                    {selectedRoom
+                      ? `This assignment will be available to students in the selected room.`
+                      : `Please select a room to continue.`}
+                  </p>
+                </div>
+
+                {/* Due Date */}
+                <div className="space-y-1">
+                  <Label htmlFor="dueDate" className="text-sm">Due Date *</Label>
+                  <Input
+                    id="dueDate"
+                    type="datetime-local"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
                     className="w-full"
                   />
                 </div>
 
                 {/* Grade */}
                 <div className="space-y-1">
-                  <Label htmlFor="grade" className="text-sm">Grade *</Label>
+                  <Label htmlFor="grade" className="text-sm">Grade (Optional)</Label>
                   <Select value={grade} onValueChange={setGrade}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select grade level..." />
+                      <SelectValue placeholder="Select grade level (optional)..." />
                     </SelectTrigger>
                     <SelectContent>
                       {allowedGrades.length === 0 ? (
@@ -1678,72 +1786,16 @@ function AssignmentsPage() {
                   </Select>
                 </div>
 
-                {/* Description */}
+                {/* Additional Note (Optional) */}
                 <div className="space-y-1">
-                  <Label htmlFor="description" className="text-sm">Description *</Label>
+                  <Label htmlFor="description" className="text-sm">Additional Note (Optional)</Label>
                   <Textarea
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe the assignment objectives and instructions..."
+                    placeholder="Add any optional instructions or notes for students..."
                     className="w-full min-h-[60px] text-sm"
                   />
-                </div>
-
-                {/* Due Date */}
-                <div className="space-y-1">
-                  <Label htmlFor="dueDate" className="text-sm">Due Date *</Label>
-                  <Input
-                    id="dueDate"
-                    type="datetime-local"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* Room Assignment */}
-                <div className="space-y-2">
-                  <Label htmlFor="assignRoom" className="text-sm font-medium">Assign to Room (Optional)</Label>
-                  <Select value={selectedRoom} onValueChange={(value) => {
-                    setSelectedRoom(value);
-                    console.log('🏠 Room selection changed to:', value);
-                    const room = rooms.find(r => r.id === value);
-                    if (room) {
-                      console.log(`   📊 Selected room "${room.name}" has ${room.student_count || 0} students`);
-                    } else if (value === 'none') {
-                      console.log('   ⚠️ No room selected - assignment will be available to all students');
-                    }
-                  }}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Choose a room to assign this assignment..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-gray-400"></div>
-                          <span>No room assignment</span>
-                        </div>
-                      </SelectItem>
-                      {rooms.map((room) => (
-                        <SelectItem key={room.id} value={room.id}>
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-2">
-                              <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                              <span>{room.name}</span>
-                            </div>
-                            <span className="text-xs text-gray-500 ml-2">({room.student_count || 0} students)</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500">
-                    {selectedRoom && selectedRoom !== 'none'
-                      ? `This assignment will be available to students in the selected room.`
-                      : `Assignment will be available to all students. You can assign it to a specific room later.`
-                    }
-                  </p>
                 </div>
 
                 <Button type="submit" className="w-full">
